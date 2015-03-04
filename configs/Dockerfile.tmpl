@@ -1,0 +1,43 @@
+FROM @DOCKER_BASE@
+MAINTAINER John Morris <john@zultron.com>
+
+ENV	TCL_VER @TCL_VER@
+ENV	CODENAME jessie
+ENV	IN_DOCKER true
+
+# Add armhf and Machinekit dep package archives
+@SOURCES_LIST@
+RUN	test -z "@KEY_IDS@" || \
+	    apt-key adv --keyserver hkp://keys.gnupg.net --recv-key "@KEY_IDS@"
+
+# Update apt cache and update packages
+RUN	apt-get update
+RUN	apt-get -y upgrade
+
+# Install basic build tools and things to help with setup
+RUN	apt-get install -y --no-install-recommends \
+	    devscripts \
+	    equivs \
+	    dpkg-dev \
+	    git \
+	    subversion \
+	    reprepro \
+	    ca-certificates \
+	    gcc \
+	    wget
+
+# Prepare debian sources
+WORKDIR /usr/src/
+ADD	build.sh /usr/src/
+ADD	configs /usr/src/configs
+ADD	scripts /usr/src/scripts
+RUN	./build.sh -p @CODENAME@ @PACKAGE@
+
+# Install build deps
+RUN	yes | mk-build-deps -ir
+
+# Clean up
+RUN	rm -rf /usr/src/*
+
+# Container environment
+WORKDIR /usr/src/
