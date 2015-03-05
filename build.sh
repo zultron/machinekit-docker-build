@@ -4,7 +4,6 @@
 
 case $MODE in
     BUILD_DOCKER_IMAGE)
-	. scripts/build-docker-image.sh
 	build_docker_image
 	;;
 
@@ -27,14 +26,12 @@ case $MODE in
 	;;
 
     BUILD_PACKAGE)
-	. scripts/build-package.sh
 	build_package
 	build_deb_repo
 	;;
 
     REPO_INIT)
 	if $IN_DOCKER; then
-	    . scripts/build-package.sh
 	    init_deb_repo
 	else
 	    $DOCKER_CMD -e IN_DOCKER=true $DOCKER_CONTAINER \
@@ -44,7 +41,6 @@ case $MODE in
 
     REPO_BUILD)
 	if $IN_DOCKER; then
-	    . scripts/build-package.sh
 	    build_deb_repo
 	else
 	    $DOCKER_CMD -e IN_DOCKER=true $DOCKER_CONTAINER \

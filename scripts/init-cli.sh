@@ -1,16 +1,23 @@
 # Print info messages
 msg() {
-    echo -e "$@" >&2
+    echo -e "INFO:  $@" >&2
+}
+
+debug() {
+    if $DEBUG; then
+	echo -e "DEBUG:  $@" >&2
+    fi
 }
 
 usage() {
     test -z "$1" || msg "$1"
     msg "Usage:"
-    msg "    $0 -i | -r | -s CODENAME PACKAGE"
+    msg "    $0 -i | -r | -s [-d] CODENAME PACKAGE"
     msg "        -i:	Build docker image"
     msg "        -r:	Run package build"
     msg "        -s:	Spawn interactive shell in docker container"
     msg "        -S:	Run as superuser"
+    msg "        -d:	Print verbose debug output"
     exit 1
 }
 
@@ -22,7 +29,8 @@ mode() {
 # Process command line opts
 MODE=NONE
 DOCKER_SUPERUSER="-u `id -u`"
-while getopts irspbIBS ARG; do
+DEBUG=false
+while getopts irspbIBSd ARG; do
     # $OPTARG
     case $ARG in
 	i) MODE=BUILD_DOCKER_IMAGE ;;
@@ -33,6 +41,7 @@ while getopts irspbIBS ARG; do
 	I) MODE=REPO_INIT ;;
 	B) MODE=REPO_BUILD ;;
 	S) DOCKER_SUPERUSER='' ;;
+	d) DEBUG=true ;;
         *) usage
     esac
 done
@@ -57,10 +66,19 @@ test -f configs/package/$PACKAGE.sh || \
 DOCKER_CONTAINER=$CODENAME-$PACKAGE
 test -n "$IN_DOCKER" || IN_DOCKER=false
 
+# Debug info
+debug "Mode: $MODE"
+
 # Source configs
-. configs/base.sh
-. configs/distro/$CODENAME.sh
-. configs/package/$PACKAGE.sh
+. configs/base.sh  # Init below variables
+. $DISTRO_CONFIG_DIR/$CODENAME.sh
+. $PACKAGE_CONFIG_DIR/$PACKAGE.sh
+
+# Source scripts
+. $SCRIPTS_DIR/build-common.sh
+. $SCRIPTS_DIR/build-docker-image.sh
+. $SCRIPTS_DIR/build-package.sh
+
 
 # Debug
 set -x

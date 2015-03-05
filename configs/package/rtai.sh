@@ -1,3 +1,5 @@
+debug "Sourcing configs/package/rtai.sh"
+
 GIT_REV=a416758
 VERSION=4.0.5.${GIT_REV}
 RELEASE=1
@@ -40,28 +42,29 @@ get_sources() {
 pre_prep_debian() {
     get_sources
 
-    mkdir -p docker/src
-    ln $SOURCE_DIR/$TARBALL docker/src/$TARBALL
+    mkdir -p docker/$SOURCE_DIR
+    ln $SOURCE_DIR/$TARBALL docker/$SOURCE_DIR/$TARBALL
 
     git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
-	gzip > docker/src/$DEBZN_TARBALL
+	gzip > docker/$SOURCE_DIR/$DEBZN_TARBALL
 }
 
 prep_debian() {
     # Source tarball
     mkdir -p $SOURCE_DIR
-    tar xCf $SOURCE_DIR src/$TARBALL --strip-components=1
+    tar xCf $SOURCE_DIR $SOURCE_DIR/$TARBALL --strip-components=1
 
     # /debian
     mkdir -p $SOURCE_DIR/debian
-    tar xCf $SOURCE_DIR/debian src/$DEBZN_TARBALL
+    tar xCf $SOURCE_DIR/debian $SOURCE_DIR/$DEBZN_TARBALL
 }
 
 unpack_source() {
     get_sources
 
     rm -rf $BUILD_DIR; mkdir -p $BUILD_DIR/debian
-    rm -f build/$DEBIAN_TARBALL; ln $SOURCE_DIR/$TARBALL build/$DEBIAN_TARBALL
+    rm -f $BUILD_BASE_DIR/$DEBIAN_TARBALL
+    ln $SOURCE_DIR/$TARBALL $BUILD_BASE_DIR/$DEBIAN_TARBALL
     tar xCf $BUILD_DIR $SOURCE_DIR/$TARBALL --strip-components=1
 
     git --git-dir=$GIT_DIR/$GIT_REPO/.git archive --prefix=./ HEAD | \

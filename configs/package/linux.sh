@@ -1,3 +1,5 @@
+debug "Sourcing configs/package/linux.sh"
+
 VERSION=3.8.13
 RELEASE=11
 TARBALL=linux-${VERSION}.tar.xz
@@ -77,21 +79,21 @@ get_sources() {
 pre_prep_debian() {
     get_sources
 
-    mkdir -p docker/src
-    ln $SOURCE_DIR/$TARBALL docker/src/$TARBALL
+    mkdir -p docker/$SOURCE_DIR
+    ln $SOURCE_DIR/$TARBALL docker/$SOURCE_DIR/$TARBALL
 
     git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
-	gzip > docker/src/$DEBZN_TARBALL
+	gzip > docker/$SOURCE_DIR/$DEBZN_TARBALL
 }
 
 prep_debian() {
     # Source tarball
     mkdir -p $SOURCE_DIR
-    tar xCf $SOURCE_DIR src/$TARBALL --strip-components=1
+    tar xCf $SOURCE_DIR $SOURCE_DIR/$TARBALL --strip-components=1
 
     # /debian
     mkdir -p $SOURCE_DIR/debian
-    tar xCf $SOURCE_DIR/debian src/$DEBZN_TARBALL
+    tar xCf $SOURCE_DIR/debian $SOURCE_DIR/$DEBZN_TARBALL
 
     # Configure package
     for featureset in $DISABLED_FEATURESETS; do

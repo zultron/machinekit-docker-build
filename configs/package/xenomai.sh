@@ -1,3 +1,5 @@
+debug "Sourcing configs/package/xenomai.sh"
+
 VERSION=2.6.3
 TARBALL=xenomai-$VERSION.tar.bz2
 TARBALL_URL=http://download.gna.org/xenomai/stable/$TARBALL
