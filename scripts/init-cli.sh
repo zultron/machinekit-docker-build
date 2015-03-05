@@ -54,12 +54,15 @@ mode && test $# = 2 || usage
 CODENAME="$1"
 PACKAGE="$2"
 
+# Init variables
+. scripts/base-config.sh
+
 # Check codename
-test -f configs/distro/$CODENAME.sh || \
+test -f $DISTRO_CONFIG_DIR/$CODENAME.sh || \
     usage "Codename '$CODENAME' not valid"
 
 # Check package
-test -f configs/package/$PACKAGE.sh || \
+test -f $PACKAGE_CONFIG_DIR/$PACKAGE.sh || \
     "Package '$PACKAGE' not valid"
 
 # Set variables
@@ -70,7 +73,6 @@ test -n "$IN_DOCKER" || IN_DOCKER=false
 debug "Mode: $MODE"
 
 # Source configs
-. configs/base.sh  # Init below variables
 . $DISTRO_CONFIG_DIR/$CODENAME.sh
 . $PACKAGE_CONFIG_DIR/$PACKAGE.sh
 

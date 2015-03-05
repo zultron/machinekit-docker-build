@@ -115,4 +115,4 @@ and `linux-latest` packages that accompany the main kernel packages.
 
 - Add changelog entry; see `dpkg-buildpackage(1)`
 - Cross-build
-- Move generated files into `build/package`
+- Multi-arch

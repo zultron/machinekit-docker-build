@@ -20,18 +20,18 @@ fi
 
 # Define pre_prep_debian if not already defined
 declare -f pre_prep_debian >/dev/null || pre_prep_debian() {
-    mkdir -p docker/$REPO_DIR docker/$SOURCE_DIR
+    mkdir -p $DOCKER_DIR/$REPO_DIR $DOCKER_DIR/$SOURCE_DIR
 }
 
 build_docker_image() {
     debug "Building docker image"
-    rm -rf docker; mkdir -p docker
+    rm -rf $DOCKER_DIR; mkdir -p $DOCKER_DIR
 
     test -z "${EXTRA_BUILD_PACKAGES}" || \
 	INSTALL_EXTRA_BUILD_PACKAGES="RUN	apt-get install -y --force-yes \
 	    --no-install-recommends ${EXTRA_BUILD_PACKAGES}"
     # Render Dockerfile template
-    sed < $CONFIG_DIR/Dockerfile.tmpl > docker/Dockerfile \
+    sed < $CONFIG_DIR/Dockerfile.tmpl > $DOCKER_DIR/Dockerfile \
 	-e "s,@PACKAGE@,${PACKAGE},g" \
 	-e "s,@DOCKER_BASE@,${DOCKER_BASE}," \
 	-e "s,@CODENAME@,${CODENAME},g" \
@@ -48,12 +48,12 @@ build_docker_image() {
 
     # Copy build scripts; this gets around docker pre v1.1 with
     # no .dockerignore support (Trusty)
-    cp -a build.sh $SCRIPTS_DIR $CONFIG_DIR docker/
+    cp -a build.sh $SCRIPTS_DIR $CONFIG_DIR $DOCKER_DIR/
 
     (
-	rm -rf docker/$REPO_DIR; mkdir -p docker/$REPO_DIR
-	>docker/$REPO_DIR/overrides
-	cd docker/$REPO_DIR
+	rm -rf $DOCKER_DIR/$REPO_DIR; mkdir -p $DOCKER_DIR/$REPO_DIR
+	>$DOCKER_DIR/$REPO_DIR/overrides
+	cd $DOCKER_DIR/$REPO_DIR
 	if test -n "$LOCAL_DEPS"; then
 	# Copy dependency packages into container
 	    for i in $LOCAL_DEPS; do
@@ -70,5 +70,5 @@ build_docker_image() {
     pre_prep_debian
 
     # Build container
-    docker build -t $DOCKER_CONTAINER docker
+    docker build -t $DOCKER_CONTAINER $DOCKER_DIR
 }

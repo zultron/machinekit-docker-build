@@ -1,7 +1,4 @@
 # Ignore generated files
-/docker/
 /repo/
-/src/
 /build/
-/git/
 /tmp/

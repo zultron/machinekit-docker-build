@@ -12,9 +12,9 @@ source_tarball_download() {
 
 source_tarball_docker_link() {
     debug "Linking source tarball"
-    mkdir -p docker/$SOURCE_DIR
-    rm -f docker/$SOURCE_DIR/$TARBALL
-    ln $SOURCE_DIR/$TARBALL docker/$SOURCE_DIR/$TARBALL
+    mkdir -p $DOCKER_DIR/$SOURCE_DIR
+    rm -f $DOCKER_DIR/$SOURCE_DIR/$TARBALL
+    ln $SOURCE_DIR/$TARBALL $DOCKER_DIR/$SOURCE_DIR/$TARBALL
 }
 
 source_tarball_unpack() {
@@ -59,5 +59,5 @@ debianization_git_tree_unpack() {
 debianization_git_tree_pack() {
     debug "Packing debianization git tree"
     git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
-	gzip > docker/$SOURCE_DIR/$DEBZN_TARBALL
+	gzip > $DOCKER_DIR/$SOURCE_DIR/$DEBZN_TARBALL
 }
