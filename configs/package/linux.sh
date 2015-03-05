@@ -17,6 +17,7 @@ LOCAL_DEPS="
 FEATURESETS="xenomai rtai"
 DISABLED_FEATURESETS=""  # Set to 'xenomai' or 'rtai' to skip build
 
+#############
 # The Debian Linux package naming scheme is a small nightmare
 LINUX_SUBVER=$(echo $VERSION | sed 's/\.[0-9]*$$//')
 LINUX_PKG_ABI=1
@@ -40,6 +41,7 @@ for fs_base in $FEATURESETS; do
 	linux-headers-${LINUX_PKG_EXTENSION}-common-${fs}_${PKG_SUFF}
     "  # FIXME:  need to filter packages for each arch
 done
+#############
 
 EXTRA_BUILD_PACKAGES=python
 # Add xenomai-kernel-source if not disabled
@@ -51,79 +53,36 @@ DISABLED_FEATURESETS=" $DISABLED_FEATURESETS "
 test "${DISABLED_FEATURESETS/rtai/}" != "$DISABLED_FEATURESETS" || \
 EXTRA_BUILD_PACKAGES+=" rtai-source"
 
-# Disable any requested featuresets
-disable_featureset() {
-    fs=$1
-    sed -i 's/^\( *'$fs'$\)/#\1/' debian/config/defines
-}
-
-get_sources() {
-    if test ! -f $SOURCE_DIR/$TARBALL; then
-	mkdir -p $SOURCE_DIR
-	wget $TARBALL_URL -O $SOURCE_DIR/$TARBALL
-    fi
-
-    if test ! -d $GIT_DIR/$GIT_REPO; then
-	(
-	    mkdir -p git; cd git
-	    git clone --depth=1 $GIT_URL
-	)
-    elif ! $IN_DOCKER; then  # git won't work in chroot
-	(
-	    cd $GIT_DIR/$GIT_REPO
-	    git pull
-	)
-    fi
+configure_package() {
+    (
+	cd $BUILD_DIR
+	# Disable any requested featuresets
+	for featureset in $DISABLED_FEATURESETS; do
+	    sed -i 's/^\( *'$featureset'$\)/#\1/' debian/config/defines
+	done
+	# Configure package
+	debian/rules debian/control NOFAIL=true
+    )
 }
 
 pre_prep_debian() {
-    get_sources
+    source_tarball_download
+    source_tarball_docker_link
 
-    mkdir -p docker/$SOURCE_DIR
-    ln $SOURCE_DIR/$TARBALL docker/$SOURCE_DIR/$TARBALL
-
-    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
-	gzip > docker/$SOURCE_DIR/$DEBZN_TARBALL
+    debianization_git_tree_update
+    debianization_git_tree_pack
 }
 
 prep_debian() {
-    # Source tarball
-    mkdir -p $SOURCE_DIR
-    tar xCf $SOURCE_DIR $SOURCE_DIR/$TARBALL --strip-components=1
+    source_tarball_unpack
+    debianization_git_tree_unpack
 
-    # /debian
-    mkdir -p $SOURCE_DIR/debian
-    tar xCf $SOURCE_DIR/debian $SOURCE_DIR/$DEBZN_TARBALL
-
-    # Configure package
-    for featureset in $DISABLED_FEATURESETS; do
-	disable_featureset $featureset
-    done
-    (
-	cd $SOURCE_DIR
-	debian/rules debian/control NOFAIL=true
-    )
+    configure_package
 }
 
 unpack_source() {
-    get_sources
+    source_tarball_unpack
+    debianization_git_tree_unpack
 
-    rm -rf $BUILD_DIR; mkdir -p $BUILD_DIR/debian
-    rm -f build/$DEBIAN_TARBALL; ln $SOURCE_DIR/$TARBALL build/$DEBIAN_TARBALL
-    tar xCf $BUILD_DIR $SOURCE_DIR/$TARBALL --strip-components=1
-
-    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive --prefix=./ HEAD | \
-	tar xCf $BUILD_DIR/debian -
-
-    for featureset in $DISABLED_FEATURESETS; do
-	(
-	    cd $BUILD_DIR
-	    disable_featureset $featureset
-	)
-    done
-
-    (
-	cd $BUILD_DIR
-	debian/rules debian/control NOFAIL=true
-    )
+    configure_package
 }

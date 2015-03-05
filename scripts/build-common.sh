@@ -36,21 +36,28 @@ debianization_git_tree_update() {
     elif ! $IN_DOCKER; then  # git fails in chroot
 	(
 	    cd $GIT_DIR/$GIT_REPO
-	    git pull
+	    git pull --ff-only
 	)
     fi
 }
 
 debianization_git_tree_unpack() {
     debug "Unpacking debianization git tree"
-    if $IN_DOCKER; then
+    if test $MODE = BUILD_DOCKER_IMAGE; then
 	# Debianization is copied into chroot with `git archive`
 	mkdir -p $BUILD_DIR/debian
 	tar xCf $BUILD_DIR/debian $SOURCE_DIR/$DEBZN_TARBALL
 
     else
 	# Outside chroot, copy directly from git tree
+	mkdir -p $BUILD_DIR/debian
 	git --git-dir=$GIT_DIR/$GIT_REPO/.git archive --prefix=./ HEAD | \
 	    tar xCf $BUILD_DIR/debian -
     fi
+}
+
+debianization_git_tree_pack() {
+    debug "Packing debianization git tree"
+    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
+	gzip > docker/$SOURCE_DIR/$DEBZN_TARBALL
 }
