@@ -110,3 +110,9 @@ In addition, these scripts also configure and build the `linux-tools`
 and `linux-latest` packages that accompany the main kernel packages.
 
 [linux-ipipe-deb]: https://github.com/zultron/linux-ipipe-deb/
+
+## TODO
+
+- Add changelog entry; see `dpkg-buildpackage(1)`
+- Cross-build
+- Move generated files into `build/package`
