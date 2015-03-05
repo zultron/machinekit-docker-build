@@ -58,11 +58,23 @@ Outside Docker, prepare files for `docker build`:
 - Run `docker build`
 
 Docker image build:
-- (to be written)
+- Starts from an official distro image on the Docker hub
+- Installs a base set of packages
+- Copies scripts, sources and repo into container
+- Installs the locally-built package dependency repo
+- `build.sh -p`:  Unpack and configure source package
+- Install package build dependencies with `mk-build-deps`
 
 ### Package build
 
-(to be written)
+Builds the package:
+- Unpacks sources
+- Runs `dpkg-buildpackage`
+
+Updates Apt package repository:
+- Initializes repo, if necessary
+- Adds source package
+- Add binary package(s)
 
 ## Packages
 
