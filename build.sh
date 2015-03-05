@@ -2,7 +2,7 @@
 
 . scripts/init-cli.sh
 
-DOCKER_CMD="docker run -i -t -v `pwd`:/usr/src $DOCKER_SUPERUSER"
+DOCKER_CMD="docker run -i -t -v `pwd`:$DOCKER_SRC_DIR $DOCKER_SUPERUSER"
 
 case $MODE in
     BUILD_DOCKER_IMAGE)

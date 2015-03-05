@@ -26,18 +26,27 @@ RUN	apt-get install -y --no-install-recommends \
 	    gcc \
 	    wget
 
+# Configure local apt repo and add any extra packages
+RUN	echo 'deb file://@DOCKER_SRC_DIR@/repo /' \
+	    > /etc/apt/sources.list.d/local.list
+ADD	repo @DOCKER_SRC_DIR@/repo
+RUN	apt-get update
+@EXTRA_BUILD_PACKAGES@
+
 # Prepare debian sources
-WORKDIR /usr/src/
-ADD	build.sh /usr/src/
-ADD	configs /usr/src/configs
-ADD	scripts /usr/src/scripts
+WORKDIR @DOCKER_SRC_DIR@/
+ADD	build.sh @DOCKER_SRC_DIR@/
+ADD	configs @DOCKER_SRC_DIR@/configs
+ADD	scripts @DOCKER_SRC_DIR@/scripts
+ADD	repo @DOCKER_SRC_DIR@/repo
+ADD	src @DOCKER_SRC_DIR@/src
 RUN	./build.sh -p @CODENAME@ @PACKAGE@
 
 # Install build deps
-RUN	yes | mk-build-deps -ir
+RUN	cd src/@PACKAGE@; yes | mk-build-deps -ir
 
 # Clean up
-RUN	rm -rf /usr/src/*
+RUN	rm -rf @DOCKER_SRC_DIR@/*
 
 # Container environment
-WORKDIR /usr/src/
+WORKDIR @DOCKER_SRC_DIR@/

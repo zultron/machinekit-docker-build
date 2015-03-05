@@ -1,12 +1,9 @@
 GIT_REV=a416758
 VERSION=4.0.5.${GIT_REV}
 RELEASE=1
-TARBALL=rtai-${RTAI_VERSION}.tar.gz
 TARBALL_URL=https://github.com/ShabbyX/RTAI/archive/${GIT_REV}.tar.gz
 DEBIAN_TARBALL=rtai_$VERSION.orig.tar.gz
 SOURCE_DIR=src
-
-DSC_FILE=${PACKAGE}_${VERSION}.dsc
 
 BINARY_PACKAGES="
     rtai-source_${VERSION}-${RELEASE}_*.deb

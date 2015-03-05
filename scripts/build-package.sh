@@ -1,6 +1,6 @@
 build_package() {
     unpack_source
-    pushd src/$PACKAGE/$SOURCE_DIR
+    pushd $BUILD_DIR
     dpkg-buildpackage -uc -us $DPKG_BUILD_ARGS
     popd
 }
@@ -32,6 +32,8 @@ build_deb_repo() {
     # /tmp/machinekit/machinekit-deb-dependency-autobuilder/Makefile
 
     # add source pkg
+    test -n "$DSC_FILE" || \
+	DSC_FILE=${PACKAGE}_${VERSION}${RELEASE:+-$RELEASE}.dsc
     ${REPREPRO} \
 	removesrc ${CODENAME} ${PACKAGE}
 
@@ -52,6 +54,6 @@ build_deb_repo() {
     (
 	cd src/${PACKAGE}
 	${REPREPRO} -C main includedeb ${CODENAME} \
-	    ${PACKAGES}
+	    ${BINARY_PACKAGES}
     )
 }

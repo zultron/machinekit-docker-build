@@ -5,8 +5,6 @@ DEBIAN_TARBALL=xenomai_$VERSION.tar.bz2
 SOURCE_DIR=xenomai-$VERSION
 DPKG_BUILD_ARGS=-Zbzip2
 
-DSC_FILE=${PACKAGE}_${VERSION}.dsc
-
 BINARY_PACKAGES="
     libxenomai-dev_${VERSION}_*.deb
     libxenomai1_${VERSION}_*.deb
