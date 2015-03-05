@@ -3,7 +3,9 @@ VERSION=4.0.5.${GIT_REV}
 RELEASE=1
 TARBALL_URL=https://github.com/ShabbyX/RTAI/archive/${GIT_REV}.tar.gz
 DEBIAN_TARBALL=rtai_$VERSION.orig.tar.gz
-SOURCE_DIR=src
+TARBALL=$DEBIAN_TARBALL
+GIT_URL=https://github.com/zultron/rtai-deb.git
+GIT_REPO=rtai-deb
 
 BINARY_PACKAGES="
     rtai-source_${VERSION}-${RELEASE}_*.deb
@@ -14,28 +16,54 @@ BINARY_PACKAGES="
     rtai-doc_${VERSION}-${RELEASE}_all.deb
 "
 
+get_sources() {
+    # Source tarball
+    if test ! -f $SOURCE_DIR/$TARBALL; then
+	mkdir -p $SOURCE_DIR
+	wget $TARBALL_URL -O $SOURCE_DIR/$TARBALL
+    fi
+
+    # Debianization git tree
+    if test ! -d $GIT_DIR/$GIT_REPO; then
+	(
+	    mkdir -p git; cd git
+	    git clone --depth=1 $GIT_URL
+	)
+    elif ! $IN_DOCKER; then  # git won't work in chroot
+	(
+	    cd $GIT_DIR/$GIT_REPO
+	    git pull
+	)
+    fi
+}
+
+pre_prep_debian() {
+    get_sources
+
+    mkdir -p docker/src
+    ln $SOURCE_DIR/$TARBALL docker/src/$TARBALL
+
+    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
+	gzip > docker/src/$DEBZN_TARBALL
+}
+
 prep_debian() {
-    mkdir -p debian
-    wget https://github.com/zultron/rtai-deb/archive/master.tar.gz
-    tar xCf debian master.tar.gz --strip-components=1
+    # Source tarball
+    mkdir -p $SOURCE_DIR
+    tar xCf $SOURCE_DIR src/$TARBALL --strip-components=1
+
+    # /debian
+    mkdir -p $SOURCE_DIR/debian
+    tar xCf $SOURCE_DIR/debian src/$DEBZN_TARBALL
 }
 
 unpack_source() {
-    if ! test -f src/rtai/$DEBIAN_TARBALL; then
-	mkdir -p src/rtai
-	wget -O src/rtai/$DEBIAN_TARBALL $TARBALL_URL
-    fi
-    rm -rf src/rtai/$SOURCE_DIR
-    mkdir -p src/rtai/$SOURCE_DIR
-    tar xCf src/rtai/$SOURCE_DIR src/rtai/$DEBIAN_TARBALL --strip-components=1
+    get_sources
 
-    ls -l
-    
-    (
-	wget https://github.com/zultron/rtai-deb/archive/master.tar.gz \
-	    -O src/rtai/debian.tar.gz
-	mkdir -p src/rtai/$SOURCE_DIR/debian
-	tar xCf src/rtai/$SOURCE_DIR/debian src/rtai/debian.tar.gz \
-	    --strip-components=1
-    )
+    rm -rf $BUILD_DIR; mkdir -p $BUILD_DIR/debian
+    rm -f build/$DEBIAN_TARBALL; ln $SOURCE_DIR/$TARBALL build/$DEBIAN_TARBALL
+    tar xCf $BUILD_DIR $SOURCE_DIR/$TARBALL --strip-components=1
+
+    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive --prefix=./ HEAD | \
+	tar xCf $BUILD_DIR/debian -
 }

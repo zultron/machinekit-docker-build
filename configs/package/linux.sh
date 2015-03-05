@@ -5,7 +5,7 @@ TARBALL_URL=http://www.kernel.org/pub/linux/kernel/v3.0/${TARBALL}
 DEBIAN_TARBALL=linux_$VERSION.orig.tar.xz
 DEBIAN_PKG_URL=https://github.com/zultron/linux-ipipe-deb/archive/${VERSION}.tar.gz
 GIT_URL=https://github.com/zultron/linux-ipipe-deb.git
-DEBZN_TARBALL=linux-ipipe-deb.tgz
+GIT_REPO=linux-ipipe-deb
 LOCAL_DEPS="
     x/xenomai/xenomai-kernel-source_*.deb
     r/rtai/rtai-source_*.deb
@@ -56,19 +56,19 @@ disable_featureset() {
 }
 
 get_sources() {
-    if test ! -f src/linux/$TARBALL; then
-	mkdir -p src/linux
-	wget $TARBALL_URL -O src/linux/$TARBALL
+    if test ! -f $SOURCE_DIR/$TARBALL; then
+	mkdir -p $SOURCE_DIR
+	wget $TARBALL_URL -O $SOURCE_DIR/$TARBALL
     fi
 
-    if test ! -d git/linux-ipipe-deb; then
+    if test ! -d $GIT_DIR/$GIT_REPO; then
 	(
 	    mkdir -p git; cd git
 	    git clone --depth=1 $GIT_URL
 	)
     elif ! $IN_DOCKER; then  # git won't work in chroot
 	(
-	    cd git/linux-ipipe-deb
+	    cd $GIT_DIR/$GIT_REPO
 	    git pull
 	)
     fi
@@ -78,24 +78,27 @@ pre_prep_debian() {
     get_sources
 
     mkdir -p docker/src
-    ln src/linux/$TARBALL docker/src/$TARBALL
+    ln $SOURCE_DIR/$TARBALL docker/src/$TARBALL
 
-    git --git-dir=git/linux-ipipe-deb/.git archive \
-	--prefix=linux-ipipe-deb/ HEAD | \
+    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive HEAD | \
 	gzip > docker/src/$DEBZN_TARBALL
 }
 
 prep_debian() {
-    mkdir -p src/linux/debian
-    tar xCf src/linux src/$TARBALL --strip-components=1
-    tar xCf src/linux/debian src/$DEBZN_TARBALL --strip-components=1
+    # Source tarball
+    mkdir -p $SOURCE_DIR
+    tar xCf $SOURCE_DIR src/$TARBALL --strip-components=1
 
+    # /debian
+    mkdir -p $SOURCE_DIR/debian
+    tar xCf $SOURCE_DIR/debian src/$DEBZN_TARBALL
+
+    # Configure package
     for featureset in $DISABLED_FEATURESETS; do
 	disable_featureset $featureset
     done
-
     (
-	cd src/linux
+	cd $SOURCE_DIR
 	debian/rules debian/control NOFAIL=true
     )
 }
@@ -104,10 +107,10 @@ unpack_source() {
     get_sources
 
     rm -rf $BUILD_DIR; mkdir -p $BUILD_DIR/debian
-    rm -f build/$DEBIAN_TARBALL; ln src/linux/$TARBALL build/$DEBIAN_TARBALL
-    tar xCf $BUILD_DIR src/linux/$TARBALL --strip-components=1
+    rm -f build/$DEBIAN_TARBALL; ln $SOURCE_DIR/$TARBALL build/$DEBIAN_TARBALL
+    tar xCf $BUILD_DIR $SOURCE_DIR/$TARBALL --strip-components=1
 
-    git --git-dir=git/linux-ipipe-deb/.git archive --prefix=./ HEAD | \
+    git --git-dir=$GIT_DIR/$GIT_REPO/.git archive --prefix=./ HEAD | \
 	tar xCf $BUILD_DIR/debian -
 
     for featureset in $DISABLED_FEATURESETS; do

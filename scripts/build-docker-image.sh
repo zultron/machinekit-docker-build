@@ -42,21 +42,21 @@ build_docker_image() {
     # no .dockerignore support (Trusty)
     cp -a build.sh scripts configs docker/
 
-    rm -rf docker/repo; mkdir -p docker/repo
-    if test -n "$LOCAL_DEPS"; then
+    (
+	rm -rf docker/repo; mkdir -p docker/repo
+	>docker/repo/overrides
+	cd docker/repo
+	if test -n "$LOCAL_DEPS"; then
 	# Copy dependency packages into container
-	for i in $LOCAL_DEPS; do
-	    eval "cp -a repo/pool/main/$i docker/repo"
-	done
-	(
-	    cd docker/repo
-	    >overrides
+	    for i in $LOCAL_DEPS; do
+		eval "cp -a ../../repo/pool/main/$i ."
+	    done
 	    for i in *.deb; do
 		dpkg-deb -W --showformat='${Package}\n' $i >> overrides
 	    done
-	    dpkg-scanpackages . overrides | gzip > Packages.gz
-	)
-    fi
+	fi
+	dpkg-scanpackages . overrides | gzip > Packages.gz
+    )
 
     # Run additional per-package prep
     pre_prep_debian

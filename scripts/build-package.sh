@@ -39,7 +39,7 @@ build_deb_repo() {
 
     ${REPREPRO} -C main \
 	includedsc ${CODENAME} \
-	src/${PACKAGE}/${DSC_FILE}
+	build/${DSC_FILE}
 
     # remove src pkg
 	    # ${REPREPRO} -T dsc \
@@ -52,7 +52,7 @@ build_deb_repo() {
 
     # add bin pkg
     (
-	cd src/${PACKAGE}
+	cd build
 	${REPREPRO} -C main includedeb ${CODENAME} \
 	    ${BINARY_PACKAGES}
     )

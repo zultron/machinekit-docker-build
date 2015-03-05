@@ -2,8 +2,8 @@ VERSION=2.6.3
 TARBALL=xenomai-$VERSION.tar.bz2
 TARBALL_URL=http://download.gna.org/xenomai/stable/$TARBALL
 DEBIAN_TARBALL=xenomai_$VERSION.tar.bz2
-SOURCE_DIR=xenomai-$VERSION
 DPKG_BUILD_ARGS=-Zbzip2
+
 
 BINARY_PACKAGES="
     libxenomai-dev_${VERSION}_*.deb
@@ -13,17 +13,17 @@ BINARY_PACKAGES="
     xenomai-runtime_${VERSION}_*.deb
 "
 
+pre_prep_debian() {
+    source_tarball_download
+    source_tarball_docker_link
+}
+
 prep_debian() {
-    mkdir debian
-    wget -O debian/control \
-	http://git.xenomai.org/xenomai-2.6.git/plain/debian/control?id=v$VERSION
+    source_tarball_unpack
 }
 
 unpack_source() {
-    if ! test -f src/xenomai/$DEBIAN_TARBALL; then
-	mkdir -p src/xenomai
-	wget -O src/xenomai/$DEBIAN_TARBALL $TARBALL_URL
-    fi
-    rm -rf src/xenomai/$SOURCE_DIR
-    tar xCf src/xenomai src/xenomai/$DEBIAN_TARBALL
+    source_tarball_download
+    source_tarball_docker_link
+    source_tarball_unpack
 }
