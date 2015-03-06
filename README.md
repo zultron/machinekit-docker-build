@@ -78,7 +78,7 @@ Updates Apt package repository:
 
 ## Packages
 
-### Linux with ipipe-based real-time extensions
+### Linux with ipipe-based real-time extensions:  Xenomai and RTAI
 
 The Debian Linux kernel package is difficult to rebuild.  It requires
 initial configuration before its build, and requires separate
@@ -87,7 +87,7 @@ and built separately.
 
 Although the package has the 'featureset' facility for special builds
 with different patch sets (the `linux-rt` kernel with `RT_PREEMPT` is
-an example), the Xenomai and RTAI extensions include extensive
+an example), the Xenomai and [RTAI] extensions include extensive
 run-time support that is best packaged separately.  The run-time
 systems must be kept in sync with the associated kernel patches.  This
 introduces additional complication when building the kernel, since
@@ -109,7 +109,18 @@ available during the Docker image build for the package configuration.
 In addition, these scripts also configure and build the `linux-tools`
 and `linux-latest` packages that accompany the main kernel packages.
 
+Package sources may be found here:
+- [linux-ipipe-deb]
+- [linux-tools-deb]
+- [linux-latest-deb]
+- [rtai-deb]
+- [Xenomai] is a native package
+
 [linux-ipipe-deb]: https://github.com/zultron/linux-ipipe-deb/
+[linux-tools-deb]: https://github.com/zultron/linux-latest-deb
+[linux-latest]: https://github.com/zultron/linux-tools-deb
+[rtai-deb]: https://github.com/zultron/rtai-deb
+[Xenomai]: https://xenomai.org/
 
 ## Debugging
 
