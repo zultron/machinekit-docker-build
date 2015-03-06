@@ -111,6 +111,15 @@ and `linux-latest` packages that accompany the main kernel packages.
 
 [linux-ipipe-deb]: https://github.com/zultron/linux-ipipe-deb/
 
+## Debugging
+
+When the build fails, start the previous container ID and source the
+scripts:
+
+    docker run -i -t 8865f96a0ffd
+	set --  -bd jessie xenomai
+	. scripts/init-cli.sh
+
 ## TODO
 
 - Add changelog entry; see `dpkg-buildpackage(1)`
