@@ -43,7 +43,7 @@ debianization_git_tree_update() {
 
 debianization_git_tree_unpack() {
     debug "Unpacking debianization git tree"
-    if test $MODE = BUILD_DOCKER_IMAGE; then
+    if test $MODE = PREP_DEBIAN; then
 	# Debianization is copied into chroot with `git archive`
 	mkdir -p $BUILD_DIR/debian
 	tar xCf $BUILD_DIR/debian $SOURCE_DIR/$DEBZN_TARBALL
