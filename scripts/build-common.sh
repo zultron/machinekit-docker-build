@@ -104,3 +104,4 @@ configure_package_wrapper() {
 	debug "    No configure_package function defined"
     fi
 }
+

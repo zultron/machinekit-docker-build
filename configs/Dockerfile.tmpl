@@ -1,20 +1,11 @@
 FROM @DOCKER_BASE@
 MAINTAINER John Morris <john@zultron.com>
 
-ENV	TCL_VER @TCL_VER@
-ENV	CODENAME jessie
+# Tell scripts we're in the container
 ENV	IN_DOCKER true
 
-# Add armhf and Machinekit dep package archives
-@SOURCES_LIST@
-RUN	test -z "@KEY_IDS@" || \
-	    apt-key adv --keyserver hkp://keys.gnupg.net --recv-key "@KEY_IDS@"
-
-# Update apt cache and update packages
-RUN	apt-get update
-RUN	apt-get -y upgrade
-
 # Install basic build tools and things to help with setup
+RUN	apt-get update
 RUN	apt-get install -y --no-install-recommends \
 	    devscripts \
 	    equivs \
@@ -30,21 +21,5 @@ RUN	apt-get install -y --no-install-recommends \
 WORKDIR @DOCKER_SRC_DIR@/
 ADD	. @DOCKER_SRC_DIR@/
 
-# Configure local apt repo and add any extra packages
-RUN	echo 'deb file://@DOCKER_SRC_DIR@/repo /' \
-	    > /etc/apt/sources.list.d/local.list
-ADD	repo @DOCKER_SRC_DIR@/repo
-RUN	apt-get update
-@EXTRA_BUILD_PACKAGES@
-
-# Prep sources
+# Install build dependencies and cross-build environment
 RUN	./build.sh -i @DEBUG_FLAG@ @CODENAME@ @PACKAGE@
-
-# Install build deps
-RUN	cd @BUILD_DIR@; yes | mk-build-deps -ir
-
-# Clean up
-RUN	rm -rf @DOCKER_SRC_DIR@
-
-# Container environment
-WORKDIR @DOCKER_SRC_DIR@

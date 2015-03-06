@@ -25,8 +25,9 @@ DOCKER_DIR=$BUILD_BASE_DIR/docker
 # Docker run command
 DOCKER_CMD="docker run -i -t -v `pwd`:$DOCKER_SRC_DIR $DOCKER_SUPERUSER"
 
-# Debug flag for passing to docker scripts
+# Debug flag for passing to docker and scripts
 DEBUG_FLAG="`$DEBUG && echo -d`"
+DOCKER_BUILD_DEBUG_FLAG="`$DEBUG && echo --force-rm=false`"
 
 # Debianization tarball
 DEBZN_TARBALL=$PACKAGE.debian.tar.gz
@@ -37,3 +38,7 @@ SCRIPTS_DIR=scripts
 CONFIG_DIR=configs
 DISTRO_CONFIG_DIR=$SCRIPTS_DIR/distro
 PACKAGE_CONFIG_DIR=$SCRIPTS_DIR/package
+
+
+# TCL default version; override in distro config
+TCL_VER=8.6

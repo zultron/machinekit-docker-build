@@ -83,3 +83,14 @@ debug "Mode: $MODE"
 
 # Debug
 ! $DDEBUG || set -x
+
+
+# Sanity checks
+
+# Be sure package is valid for distro
+PACKAGES=" $PACKAGES "
+if test "$PACKAGES" = "${PACKAGES/ $PACKAGE /}"; then
+    echo "Package '$PACKAGE' not valid for codename '$CODENAME'" >&2
+    exit 1
+fi
+
