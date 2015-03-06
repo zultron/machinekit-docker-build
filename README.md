@@ -116,3 +116,5 @@ and `linux-latest` packages that accompany the main kernel packages.
 - Add changelog entry; see `dpkg-buildpackage(1)`
 - Cross-build
 - Multi-arch
+- Remove a level from git directory
+- Auto-gen source tarball name; account for native packages

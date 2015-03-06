@@ -28,11 +28,7 @@ RUN	apt-get install -y --no-install-recommends \
 
 # Copy scripts and sources
 WORKDIR @DOCKER_SRC_DIR@/
-ADD	build.sh @DOCKER_SRC_DIR@/
-ADD	@CONFIG_DIR@ @DOCKER_SRC_DIR@/@CONFIG_DIR@
-ADD	@SCRIPTS_DIR@ @DOCKER_SRC_DIR@/@SCRIPTS_DIR@
-ADD	@REPO_DIR@ @DOCKER_SRC_DIR@/@REPO_DIR@
-ADD	@SOURCE_DIR@ @DOCKER_SRC_DIR@/@SOURCE_DIR@
+ADD	. @DOCKER_SRC_DIR@/
 
 # Configure local apt repo and add any extra packages
 RUN	echo 'deb file://@DOCKER_SRC_DIR@/repo /' \
@@ -42,7 +38,7 @@ RUN	apt-get update
 @EXTRA_BUILD_PACKAGES@
 
 # Prep sources
-RUN	./build.sh -p @CODENAME@ @PACKAGE@
+RUN	./build.sh -i @DEBUG_FLAG@ @CODENAME@ @PACKAGE@
 
 # Install build deps
 RUN	cd @BUILD_DIR@; yes | mk-build-deps -ir

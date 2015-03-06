@@ -25,6 +25,9 @@ DOCKER_DIR=$BUILD_BASE_DIR/docker
 # Docker run command
 DOCKER_CMD="docker run -i -t -v `pwd`:$DOCKER_SRC_DIR $DOCKER_SUPERUSER"
 
+# Debug flag for passing to docker scripts
+DEBUG_FLAG="`$DEBUG && echo -d`"
+
 # Debianization tarball
 DEBZN_TARBALL=$PACKAGE.debian.tar.gz
 

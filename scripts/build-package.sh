@@ -1,11 +1,30 @@
 debug "Sourcing build-package.sh"
+#
+# These routines handle building the package in the Docker container.
+# They are called directly with this directory bind-mounted in the
+# container.
+#
+# They are not used in the Docker image build.
 
+# Entry point into package build from Docker container
 build_package() {
-    debug "Building package"
-    unpack_source
-    pushd $BUILD_DIR
-    dpkg-buildpackage -uc -us $DPKG_BUILD_ARGS
-    popd
+    msg "Building package '$PACKAGE'"
+    # Download source tarball and unpack
+    source_tarball_download
+    source_tarball_unpack
+
+    # Update debianization git tree and copy to source tree
+    debianization_git_tree_update
+    debianization_git_tree_unpack
+
+    # Some packages may define a configuration step
+    configure_package_wrapper
+
+    # Build package
+    (
+	cd $BUILD_DIR
+	dpkg-buildpackage -uc -us $DPKG_BUILD_ARGS
+    )
 }
 
 REPODIR=$(readlink -f $REPO_DIR)
@@ -14,7 +33,7 @@ REPREPRO="reprepro -VV -b ${REPODIR} \
 
 init_deb_repo() {
     if test ! -f ${REPODIR}/conf-${CODENAME}/distributions; then
-	debug "Initializing Debian Apt package repository"
+	msg "Initializing Debian Apt package repository"
 	mkdir -p ${REPODIR}/conf-${CODENAME}
 	
 	sed < $CONFIG_DIR/ppa-distributions.tmpl \
@@ -33,7 +52,7 @@ build_deb_repo() {
     # init Debian repo, if applicable
     init_deb_repo
 
-    debug "Updating Debian Apt package repository"
+    msg "Updating Debian Apt package repository"
 
     # add source pkg
     test -n "$DSC_FILE" || \

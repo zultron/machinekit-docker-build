@@ -3,48 +3,44 @@
 . scripts/init-cli.sh
 
 case $MODE in
-    BUILD_DOCKER_IMAGE)
-	build_docker_image
-	;;
-
-    RUN_DOCKER)
-	$DOCKER_CMD $DOCKER_CONTAINER \
-	    ./build.sh -b $CODENAME $PACKAGE
-	;;
-
-    DOCKER_SHELL)
-	$DOCKER_CMD $DOCKER_CONTAINER
-	;;
-
-    PREP_DEBIAN)
-	if $IN_DOCKER; then
-	    prep_debian
+    BUILD_DOCKER_IMAGE) # -i: Build docker image
+	if ! $IN_DOCKER; then
+	    docker_image_build
 	else
-	    $DOCKER_CMD -e IN_DOCKER=true $DOCKER_CONTAINER \
-		./build.sh -p $CODENAME $PACKAGE
+	    docker_image_unpack_sources
 	fi
 	;;
 
-    BUILD_PACKAGE)
-	build_package
-	build_deb_repo
+    BUILD_PACKAGE) # -b:  Build package in Docker container
+	if ! $IN_DOCKER; then
+	    # Re-run ourself in Docker
+	    $DOCKER_CMD -e IN_DOCKER=true $DOCKER_CONTAINER \
+		./build.sh -b $DEBUG_FLAG $CODENAME $PACKAGE
+	else
+	    build_package
+	    build_deb_repo
+	fi
 	;;
 
-    REPO_INIT)
+    DOCKER_SHELL) # -s: Spawn interactive shell in docker container
+	$DOCKER_CMD $DOCKER_CONTAINER
+	;;
+
+    REPO_INIT) # -I
 	if $IN_DOCKER; then
 	    init_deb_repo
 	else
 	    $DOCKER_CMD -e IN_DOCKER=true $DOCKER_CONTAINER \
-		./build.sh -I $CODENAME $PACKAGE
+		./build.sh -I $DEBUG_FLAG $CODENAME $PACKAGE
 	fi
 	;;
 
-    REPO_BUILD)
+    REPO_BUILD) # -B
 	if $IN_DOCKER; then
 	    build_deb_repo
 	else
 	    $DOCKER_CMD -e IN_DOCKER=true $DOCKER_CONTAINER \
-		./build.sh -B $CODENAME $PACKAGE
+		./build.sh -B $DEBUG_FLAG $CODENAME $PACKAGE
 	fi
 	;;
 

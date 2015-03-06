@@ -1,4 +1,16 @@
 debug "Sourcing build-docker-image.sh"
+#
+# These routines handle unpacking sources to generate build deps
+# during the Docker image build.  There are two stages:
+#
+# 1) (Before `docker build`) Download sources and put into Docker
+#    image build context
+#
+# 2) (During `docker build`) Unpack sources and debian files and
+#    optionally configure the package.
+#
+# These routines are not shared with the Docker container package
+# build.
 
 # Defaults
 TCL_VER=8.6
@@ -18,13 +30,8 @@ else
     SOURCES_LIST="# No extra sources.list"
 fi
 
-# Define pre_prep_debian if not already defined
-declare -f pre_prep_debian >/dev/null || pre_prep_debian() {
-    mkdir -p $DOCKER_DIR/$REPO_DIR $DOCKER_DIR/$SOURCE_DIR
-}
-
-build_docker_image() {
-    debug "Building docker image"
+docker_image_build() {
+    msg "Building docker image"
     rm -rf $DOCKER_DIR; mkdir -p $DOCKER_DIR
 
     test -z "${EXTRA_BUILD_PACKAGES}" || \
@@ -45,6 +52,8 @@ build_docker_image() {
 	-e "s,@REPO_DIR@,${REPO_DIR},g" \
 	-e "s,@SCRIPTS_DIR@,${SCRIPTS_DIR},g" \
 	-e "s,@CONFIG_DIR@,${CONFIG_DIR},g" \
+	-e "s,@GIT_DIR@,${GIT_DIR},g" \
+	-e "s,@DEBUG_FLAG@,${DEBUG_FLAG},g" \
 
     # Copy build scripts; this gets around docker pre v1.1 with
     # no .dockerignore support (Trusty)
@@ -66,9 +75,26 @@ build_docker_image() {
 	dpkg-scanpackages . overrides | gzip > Packages.gz
     )
 
-    # Run additional per-package prep
-    pre_prep_debian
+    # Download source tarball and link into Docker context
+    source_tarball_download
+    source_tarball_docker_link
+
+    # Update debianization from git and build tarball
+    debianization_git_tree_update
+    debianization_git_tree_pack
 
     # Build container
     docker build -t $DOCKER_CONTAINER $DOCKER_DIR
+}
+
+docker_image_unpack_sources() {
+    msg "Unpacking package sources for Docker image"
+
+    # Unpack source tarball
+    source_tarball_unpack
+    # Unpack debianization tarball
+    debianization_git_tree_unpack
+
+    # Configure package
+    configure_package_wrapper
 }

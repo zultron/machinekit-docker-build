@@ -2,8 +2,7 @@ debug "Sourcing configs/package/linux.sh"
 
 VERSION=3.8.13
 RELEASE=11
-TARBALL=linux-${VERSION}.tar.xz
-TARBALL_URL=http://www.kernel.org/pub/linux/kernel/v3.0/${TARBALL}
+TARBALL_URL=http://www.kernel.org/pub/linux/kernel/v3.0/linux-${VERSION}.tar.xz
 DEBIAN_TARBALL=linux_$VERSION.orig.tar.xz
 DEBIAN_PKG_URL=https://github.com/zultron/linux-ipipe-deb/archive/${VERSION}.tar.gz
 GIT_URL=https://github.com/zultron/linux-ipipe-deb.git
@@ -63,26 +62,4 @@ configure_package() {
 	# Configure package
 	debian/rules debian/control NOFAIL=true
     )
-}
-
-pre_prep_debian() {
-    source_tarball_download
-    source_tarball_docker_link
-
-    debianization_git_tree_update
-    debianization_git_tree_pack
-}
-
-prep_debian() {
-    source_tarball_unpack
-    debianization_git_tree_unpack
-
-    configure_package
-}
-
-unpack_source() {
-    source_tarball_unpack
-    debianization_git_tree_unpack
-
-    configure_package
 }

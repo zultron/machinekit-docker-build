@@ -1,20 +1,20 @@
 # Print info messages
 msg() {
-    echo -e "INFO:  $@" >&2
+    echo -e "INFO:	$@" >&2
 }
 
 debug() {
     if $DEBUG; then
-	echo -e "DEBUG:  $@" >&2
+	echo -e "DEBUG:	$@" >&2
     fi
 }
 
 usage() {
     test -z "$1" || msg "$1"
     msg "Usage:"
-    msg "    $0 -i | -r | -s [-d] CODENAME PACKAGE"
+    msg "    $0 -i | -b | -s [-d] CODENAME PACKAGE"
     msg "        -i:	Build docker image"
-    msg "        -r:	Run package build"
+    msg "        -b:	Run package build"
     msg "        -s:	Spawn interactive shell in docker container"
     msg "        -S:	Run as superuser"
     msg "        -d:	Print verbose debug output"
@@ -30,18 +30,17 @@ mode() {
 MODE=NONE
 DOCKER_SUPERUSER="-u `id -u`"
 DEBUG=false
-while getopts irspbIBSd ARG; do
+DDEBUG=false
+while getopts ibsIBSd ARG; do
     # $OPTARG
     case $ARG in
 	i) MODE=BUILD_DOCKER_IMAGE ;;
-	r) MODE=RUN_DOCKER ;;
-	s) MODE=DOCKER_SHELL ;;
-	p) MODE=PREP_DEBIAN ;;
 	b) MODE=BUILD_PACKAGE ;;
+	s) MODE=DOCKER_SHELL ;;
 	I) MODE=REPO_INIT ;;
 	B) MODE=REPO_BUILD ;;
 	S) DOCKER_SUPERUSER='' ;;
-	d) DEBUG=true ;;
+	d) ! $DEBUG || DDEBUG=true; DEBUG=true ;;
         *) usage
     esac
 done
@@ -83,4 +82,4 @@ debug "Mode: $MODE"
 
 
 # Debug
-set -x
+! $DDEBUG || set -x
